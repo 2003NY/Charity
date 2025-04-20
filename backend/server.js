@@ -4,14 +4,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
-const { DonationLog, CharityTransfer } = require("./models/db");
-
+const { DonationLog, CharityTransfer } = require("./db/db");
+const cors = require("cors");
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
+app.use(cors());
 // Middleware
 app.use(bodyParser.json());
 

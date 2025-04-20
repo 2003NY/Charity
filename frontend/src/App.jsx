@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from './contracts/etherCharity';
+import axios from 'axios';
 import './App.css';
 
 function App() {
@@ -8,7 +9,6 @@ function App() {
   const [contractBalance, setContractBalance] = useState("0");
   const [amount, setAmount] = useState("");
 
-  // Connect wallet to MetaMask
   const connectWallet = async () => {
     if (window.ethereum) {
       const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -18,14 +18,12 @@ function App() {
     }
   };
 
-  // Get contract instance with signer
   const getContract = async () => {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
   };
 
-  // Deposit function to send Ether
   const deposit = async () => {
     if (!amount || isNaN(amount)) {
       alert("Enter a valid amount");
@@ -36,17 +34,24 @@ function App() {
       const contract = await getContract();
       const tx = await contract.deposit({ value: ethers.parseEther(amount) });
       await tx.wait();
-      alert("✅ Deposit successful!");
+      alert("✅ Donation successful!");
 
+      // Log donation to backend
+      await axios.post("http://localhost:5000/api/donate", {
+        donor: wallet,
+        amount: amount,
+        txHash: tx.hash
+      });
+
+      console.log("Donation logged to backend");
       setAmount("");
-      fetchContractBalance(); // update balance after deposit
+      fetchContractBalance();
     } catch (err) {
       console.error(err);
-      alert("❌ Deposit failed.");
+      alert("❌ Donation failed.");
     }
   };
 
-  // Fetch balance of the contract
   const fetchContractBalance = async () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
