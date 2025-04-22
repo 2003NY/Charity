@@ -68,6 +68,22 @@ app.get("/api/transfers", async (req, res) => {
   }
 });
 
+app.get("/api/logs/all", async (req, res) => {
+  try {
+    const donations = await DonationLog.find();
+    const transfers = await CharityTransfer.find();
+
+    // console.log(donations);
+    // console.log(transfers);
+
+    res.status(200).json({ donations, transfers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch logs" });
+  }
+});
+
+
 // ---------------------------
 // Start the server
 // ---------------------------
@@ -76,4 +92,5 @@ async function main() {
     app.listen(process.env.PORT);
     console.log("Listening on port 5000");
   }
+
 main()
